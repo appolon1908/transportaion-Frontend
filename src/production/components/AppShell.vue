@@ -18,6 +18,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const mobileOpen = ref(false);
 const switchingOrganization = ref(false);
+const organizationError = ref("");
 
 const navigation: NavigationItem[] = [
   { label: "Control tower", to: "/", code: "CT" },
@@ -72,13 +73,21 @@ watch(
 );
 
 const changeOrganization = async (event: Event): Promise<void> => {
-  const organizationId = (event.target as HTMLSelectElement).value;
+  const select = event.target as HTMLSelectElement;
+  const organizationId = select.value;
+  if (switchingOrganization.value) return;
   if (!organizationId || organizationId === auth.selectedOrganizationId) return;
+  organizationError.value = "";
   switchingOrganization.value = true;
   try {
     await auth.selectOrganization(organizationId);
     await router.push("/");
+  } catch (error) {
+    organizationError.value =
+      error instanceof Error ? error.message : "Organization selection failed.";
   } finally {
+    // Native select values change before Vue sees a successful state update.
+    select.value = auth.selectedOrganizationId ?? "";
     switchingOrganization.value = false;
   }
 };
@@ -172,7 +181,9 @@ const changeOrganization = async (event: Event): Promise<void> => {
       </header>
 
       <main id="main-content" class="main-content" tabindex="-1">
-        <RouterView />
+        <p v-if="organizationError" class="alert alert-error" role="alert">{{ organizationError }}</p>
+        <p v-if="switchingOrganization" role="status">Loading organization…</p>
+        <RouterView v-else :key="auth.selectedOrganizationId ?? 'no-organization'" />
       </main>
     </div>
   </div>

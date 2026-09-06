@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { ApiError } from "../api/client";
+import { datetimeLocal, minorMoney, money } from "../utils/presentation";
 import {
   portalApi,
   type CarrierEvidence,
@@ -31,7 +32,7 @@ const tracking = reactive({
     | "DELAYED"
     | "ARRIVED_DELIVERY"
     | "DELIVERED",
-  occurred_at: new Date().toISOString().slice(0, 16),
+  occurred_at: datetimeLocal(),
   latitude: "",
   longitude: "",
   note: "",
@@ -58,11 +59,6 @@ const carrierName = computed(() => {
 const openTenders = computed(() =>
   tenders.value.filter((item) => ["SENT", "PENDING"].includes(item.status)),
 );
-
-const money = (value: string | number | undefined, currency = "USD"): string =>
-  new Intl.NumberFormat(undefined, { style: "currency", currency }).format(
-    Number(value ?? 0),
-  );
 
 const describeError = (value: unknown): string => {
   if (value instanceof ApiError) return `${value.message} (${value.code})`;
@@ -128,7 +124,7 @@ const submitTracking = async (): Promise<void> => {
     });
     tracking.source_event_id = "";
     tracking.note = "";
-    tracking.occurred_at = new Date().toISOString().slice(0, 16);
+    tracking.occurred_at = datetimeLocal();
     notice.value = "Tracking event accepted. Reusing the source event ID with different data will be rejected as a collision.";
   } catch (value) {
     error.value = describeError(value);
@@ -253,7 +249,7 @@ onMounted(refresh);
 
       <article class="work-panel">
         <div class="section-heading compact"><div><p class="eyebrow">Finance visibility</p><h2>Settlements</h2></div></div>
-        <div class="card-list"><article v-for="item in settlements" :key="item.id" class="record-card settlement-card"><div><strong>{{ Number(item.total_minor).toLocaleString() }} {{ item.currency }}</strong><p>{{ item.status }} · load {{ item.load_id || "—" }}</p></div></article><p v-if="!loading && settlements.length === 0" class="empty-state">No settlements found.</p></div>
+        <div class="card-list"><article v-for="item in settlements" :key="item.id" class="record-card settlement-card"><div><strong>{{ minorMoney(item.total_minor, item.currency) }}</strong><p>{{ item.status }} · load {{ item.load_id || "—" }}</p></div></article><p v-if="!loading && settlements.length === 0" class="empty-state">No settlements found.</p></div>
       </article>
     </div>
   </section>

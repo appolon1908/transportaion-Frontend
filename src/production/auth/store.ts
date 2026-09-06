@@ -152,6 +152,8 @@ export const useAuthStore = defineStore("production-auth", {
       typeof window === "undefined"
         ? null
         : sessionStorage.getItem(ORGANIZATION_STORAGE_KEY),
+    // Invalidates superseded context requests and responses arriving after logout.
+    contextRevision: 0,
     initialized: false,
     busy: false,
     error: null as string | null,
@@ -237,22 +239,15 @@ export const useAuthStore = defineStore("production-auth", {
       return refreshPromise;
     },
 
-    async fetchContext(): Promise<void> {
-      if (!this.tokens) {
-        this.context = null;
-        return;
-      }
+    async requestContext(organizationId: string | null): Promise<Record<string, unknown>> {
       const token = await this.accessToken();
       const headers = new Headers({
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
         "X-Correlation-Id": crypto.randomUUID(),
       });
-      if (this.selectedOrganizationId) {
-        headers.set(
-          runtimeConfig.organizationSelectionHeader,
-          this.selectedOrganizationId,
-        );
+      if (organizationId) {
+        headers.set(runtimeConfig.organizationSelectionHeader, organizationId);
       }
       const response = await fetch(endpoint(runtimeConfig.authContextPath), {
         headers,
@@ -262,25 +257,33 @@ export const useAuthStore = defineStore("production-auth", {
       if (!response.ok) {
         throw new Error(`Session context failed with HTTP ${response.status}.`);
       }
-      const raw = (await response.json()) as Record<string, unknown>;
-      const normalized = normalizeContext(raw, this.selectedOrganizationId);
-      this.context = normalized;
+      const raw: unknown = await response.json();
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        throw new Error("Session context is invalid.");
+      }
+      return raw as Record<string, unknown>;
+    },
 
-      const membershipIds = new Set(
-        normalized.memberships.map((item) => item.organizationId),
-      );
-      if (
-        this.selectedOrganizationId &&
-        !membershipIds.has(this.selectedOrganizationId)
-      ) {
-        this.selectedOrganizationId = null;
+    async fetchContext(): Promise<void> {
+      const revision = ++this.contextRevision;
+      if (!this.tokens) {
+        this.context = null;
+        return;
+      }
+      const organizationId = this.selectedOrganizationId;
+      const raw = await this.requestContext(organizationId);
+      if (revision !== this.contextRevision || !this.tokens) {
+        throw new Error("Session context request was superseded.");
+      }
+      const normalized = normalizeContext(raw, organizationId);
+      if (organizationId && !normalized.selectedOrganizationId) {
         sessionStorage.removeItem(ORGANIZATION_STORAGE_KEY);
-        this.context = normalizeContext(raw, null);
-      } else if (
-        !this.selectedOrganizationId &&
-        normalized.memberships.length === 1
-      ) {
-        await this.selectOrganization(normalized.memberships[0].organizationId);
+        this.$patch({ selectedOrganizationId: null, context: normalizeContext(raw, null) });
+      } else {
+        this.context = normalized;
+        if (!organizationId && normalized.memberships.length === 1) {
+          await this.selectOrganization(normalized.memberships[0].organizationId);
+        }
       }
     },
 
@@ -292,9 +295,20 @@ export const useAuthStore = defineStore("production-auth", {
       ) {
         throw new Error("Organization selection is not a current membership.");
       }
-      this.selectedOrganizationId = organizationId;
+      const revision = ++this.contextRevision;
+      // Request the candidate explicitly; old records keep their old selection
+      // until a valid response is available. Failed requests change no selection.
+      const raw = await this.requestContext(organizationId);
+      if (revision !== this.contextRevision || !this.tokens) {
+        throw new Error("Organization selection request was superseded.");
+      }
+      const normalized = normalizeContext(raw, organizationId);
+      if (normalized.selectedOrganizationId !== organizationId) {
+        throw new Error("Organization selection is no longer a current membership.");
+      }
+      // Storage failure also leaves the prior in-memory selection/context intact.
       sessionStorage.setItem(ORGANIZATION_STORAGE_KEY, organizationId);
-      await this.fetchContext();
+      this.$patch({ selectedOrganizationId: organizationId, context: normalized });
     },
 
     hasPermission(permission: string): boolean {
@@ -314,6 +328,7 @@ export const useAuthStore = defineStore("production-auth", {
     },
 
     clearSession(): void {
+      ++this.contextRevision;
       this.tokens = null;
       this.context = null;
       this.selectedOrganizationId = null;
