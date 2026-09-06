@@ -17,6 +17,10 @@ on:
       - ".github/workflows/portal-shell-ci.yml"
   push:
     branches:
+      - "development"
+      - "main"
+      - "staging"
+      - "production"
       - "fe/portal-shell-authz-api-v2"
       - "fe/release-readiness-v4"
 

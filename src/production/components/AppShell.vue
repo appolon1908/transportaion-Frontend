@@ -27,7 +27,7 @@ const navigation: NavigationItem[] = [
     to: "/portal/admin",
     code: "AD",
     portal: "ADMIN",
-    permission: "admin.users.manage",
+    permission: "admin.identity.read",
   },
   {
     label: "Operations",
