@@ -44,7 +44,7 @@ const normalizeMembership = (value: Record<string, unknown>): OrganizationMember
   roles: asStrings(value.roles),
   permissions: asStrings(value.permissions),
   capabilities: asStrings(value.capabilities),
-  status: firstString(value.status, "ACTIVE").toUpperCase(),
+  status: firstString(value.status).toUpperCase(),
 });
 
 const derivePortals = (
@@ -101,7 +101,7 @@ const normalizeContext = (
   ) as Record<string, unknown>[];
   const memberships = rawMemberships
     .map(normalizeMembership)
-    .filter((item) => item.organizationId && item.status !== "DISABLED");
+    .filter((item) => item.organizationId && item.status === "ACTIVE");
   const selected = memberships.find(
     (item) => item.organizationId === selectedOrganizationId,
   );

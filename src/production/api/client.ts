@@ -144,6 +144,7 @@ export const apiRequest = async <TResponse, TBody = unknown>(
   path: string,
   options: RequestOptions<TBody> = {},
 ): Promise<ApiResponse<TResponse>> => {
+  options.signal?.throwIfAborted();
   const auth = useAuthStore();
   const method = options.method ?? "GET";
   const correlationId = crypto.randomUUID();
@@ -153,7 +154,10 @@ export const apiRequest = async <TResponse, TBody = unknown>(
     (isMutation && options.idempotent !== false ? crypto.randomUUID() : undefined);
 
   const execute = async (retriedAfterUnauthorized: boolean): Promise<ApiResponse<TResponse>> => {
+    options.signal?.throwIfAborted();
     const token = await auth.accessToken();
+    // Cancellation may have happened while a shared token refresh was pending.
+    options.signal?.throwIfAborted();
     const headers = new Headers({
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
@@ -184,12 +188,14 @@ export const apiRequest = async <TResponse, TBody = unknown>(
     const controller = new AbortController();
     const externalAbort = (): void => controller.abort(options.signal?.reason);
     options.signal?.addEventListener("abort", externalAbort, { once: true });
+    if (options.signal?.aborted) externalAbort();
     const timeout = window.setTimeout(
       () => controller.abort(new DOMException("Request timed out", "TimeoutError")),
       options.timeoutMs ?? runtimeConfig.requestTimeoutMs,
     );
 
     try {
+      controller.signal.throwIfAborted();
       const response = await fetch(buildUrl(path, options.query), {
         method,
         headers,
@@ -203,6 +209,7 @@ export const apiRequest = async <TResponse, TBody = unknown>(
       const rateLimit = readRateLimit(response);
 
       if (response.status === 401 && !retriedAfterUnauthorized) {
+        options.signal?.throwIfAborted();
         await auth.refresh();
         return execute(true);
       }
