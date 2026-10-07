@@ -2,7 +2,7 @@
 
 ## Repository
 
-- Repository: `appolon1908-hue/transportaion-Frontend`
+- Repository: `appolon1908/transportaion-Frontend`
 - Class: `frontend`
 - Purpose: freight-platform frontend and portals
 - Current default branch: governance/documentation only
