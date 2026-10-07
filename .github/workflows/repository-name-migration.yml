@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
-      EXPECTED_REPOSITORY_FULL_NAME: appolon1908-hue/transportaion-Frontend
+      EXPECTED_REPOSITORY_FULL_NAME: appolon1908/transportaion-Frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
