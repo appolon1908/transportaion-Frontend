@@ -2,8 +2,8 @@
 
 ```text
 REPOSITORY_ID=1343761049
-CURRENT_FULL_NAME=appolon1908-hue/transportaion-Frontend
-TARGET_FULL_NAME=appolon1908-hue/freight-platform-frontend
+CURRENT_FULL_NAME=appolon1908/transportaion-Frontend
+TARGET_FULL_NAME=appolon1908/freight-platform-frontend
 STATUS=PREPARED_NOT_RENAMED
 RUNTIME_CRITICAL=YES
 CURRENT_RUNTIME_STATE=SOURCE_ONLY_NOT_DEPLOYED
@@ -18,7 +18,7 @@ The current full name remains operational until an authorized GitHub rename is c
 
 The current repository evidence describes source and documentation only; it does not prove a deployed frontend runtime. Runtime-critical means future deployment consumers must be protected during cutover. It does not permit an operator to invent an image digest that does not exist.
 
-[`config/repository-source-authority.v1.json`](config/repository-source-authority.v1.json) binds the source-only application to the current GitHub slug, records no active deployment or server checkout consumer, and identifies `.github/workflows/repository-name-migration.yml` as the active automation consumer. The workflow must continue asserting `appolon1908-hue/transportaion-Frontend` while the migration state is `PREPARED_NOT_RENAMED`.
+[`config/repository-source-authority.v1.json`](config/repository-source-authority.v1.json) binds the source-only application to the current GitHub slug, records no active deployment or server checkout consumer, and identifies `.github/workflows/repository-name-migration.yml` as the active automation consumer. The workflow must continue asserting `appolon1908/transportaion-Frontend` while the migration state is `PREPARED_NOT_RENAMED`.
 
 ## Required pre-cutover inventory
 
