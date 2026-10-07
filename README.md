@@ -6,8 +6,8 @@ Canonical frontend authority for the freight brokerage and 3PL operating platfor
 
 ```text
 STABLE_GITHUB_REPOSITORY_ID=1343761049
-CURRENT_OPERATIONAL_REPOSITORY=appolon1908-hue/transportaion-Frontend
-APPROVED_TARGET_AFTER_CONTROLLED_RENAME=appolon1908-hue/freight-platform-frontend
+CURRENT_OPERATIONAL_REPOSITORY=appolon1908/transportaion-Frontend
+APPROVED_TARGET_AFTER_CONTROLLED_RENAME=appolon1908/freight-platform-frontend
 RENAME_STATUS=PREPARED_NOT_RENAMED
 ```
 
