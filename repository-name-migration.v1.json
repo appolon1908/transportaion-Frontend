@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "repository_id": 1343761049,
-  "current_repository": "appolon1908-hue/transportaion-Frontend",
-  "target_repository_after_cutover": "appolon1908-hue/freight-platform-frontend",
+  "current_repository": "appolon1908/transportaion-Frontend",
+  "target_repository_after_cutover": "appolon1908/freight-platform-frontend",
   "status": "PREPARED_NOT_RENAMED",
   "runtime_critical": true,
   "current_runtime_state": "SOURCE_ONLY_NOT_DEPLOYED",

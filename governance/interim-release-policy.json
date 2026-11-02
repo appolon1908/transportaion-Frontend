@@ -8,6 +8,11 @@
       "context": "required-ci",
       "integration_id": 15368,
       "workflow": ".github/workflows/required-ci.yml"
+    },
+    {
+      "context": "validate",
+      "integration_id": 15368,
+      "workflow": ".github/workflows/repository-name-migration.yml"
     }
   ],
   "replaces_contexts": [

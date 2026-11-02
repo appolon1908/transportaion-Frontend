@@ -16,8 +16,8 @@ README = ROOT / "README.md"
 RUNBOOK = ROOT / "REPOSITORY_NAME_MIGRATION.md"
 WORKFLOW = ROOT / ".github" / "workflows" / "repository-name-migration.yml"
 VALIDATOR = Path(__file__).resolve()
-CURRENT = "appolon1908-hue/transportaion-Frontend"
-TARGET = "appolon1908-hue/freight-platform-frontend"
+CURRENT = "appolon1908/transportaion-Frontend"
+TARGET = "appolon1908/freight-platform-frontend"
 
 EXCLUDED_PARTS = {
     ".git",
@@ -145,7 +145,7 @@ def validate_workflow() -> None:
         "push:",
         "branches:",
         "- main",
-        "EXPECTED_REPOSITORY_FULL_NAME: appolon1908-hue/transportaion-Frontend",
+        "EXPECTED_REPOSITORY_FULL_NAME: appolon1908/transportaion-Frontend",
         "persist-credentials: false",
         "python scripts/validate_repository_name_migration.py",
     ):
